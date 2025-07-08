@@ -34,10 +34,13 @@ export default function LoginScreen({ navigation }) {
       });
 
       if (response.status === 200 && response.data.success) {
-        const { token } = response.data;
+        const { token, hotelId } = response.data;
 
         // Store token securely in AsyncStorage
         await AsyncStorage.setItem('authToken', token);
+        await AsyncStorage.setItem('username', username);
+         await AsyncStorage.setItem('hotelid', hotelId);
+
 
                     Toast.show('Login Successful.!', {
             duration: Toast.durations.LONG,

@@ -22,8 +22,7 @@ export default function LanguageSwitcher() {
       onDismiss={closeMenu}
       anchor={
         <IconButton
-          icon="translate" // language symbol icon from react-native-paper vector-icons
-          size={24}
+          icon="translate" 
           onPress={openMenu}
           accessibilityLabel="Select language"
         />
@@ -37,7 +36,7 @@ export default function LanguageSwitcher() {
             closeMenu();
           }}
           title={label}
-          leadingIcon={code === language ? 'check' : null} // show checkmark for selected language
+          leadingIcon={code === language ? 'check' : null} 
         />
       ))}
     </Menu>

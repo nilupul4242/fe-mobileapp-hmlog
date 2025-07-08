@@ -16,7 +16,6 @@ export default function IssueForm({ formState, setFormState, onSubmit, categorie
   const { language } = useContext(LanguageContext);
   const { colors } = useTheme();
 
-  // State for dropdown menus visibility
   const [categoryMenuVisible, setCategoryMenuVisible] = useState(false);
   const [assigneeMenuVisible, setAssigneeMenuVisible] = useState(false);
 

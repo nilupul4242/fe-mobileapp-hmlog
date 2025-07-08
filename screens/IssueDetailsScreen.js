@@ -1,20 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { Title, useTheme, Divider, Menu, Button } from 'react-native-paper';
+import { useIsFocused } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-root-toast';
+
 import IssueList from '../components/IssueList';
 import LoadingSpinner from '../components/LoadingSpinner';
+import LanguageContext from '../contexts/LanguageContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function IssueDetailsScreen() {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isResolved, setIsResolved] = useState(true); // Default value
+  const [isResolved, setIsResolved] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [username, setUsername] = useState('');
 
+  const isFocused = useIsFocused();
   const { colors } = useTheme();
 
-  useEffect(() => {
-    fetchIssues();
-  }, [isResolved]);
+  const { language } = useContext(LanguageContext);
+
+  // Translations
+  const t = {
+    en: {
+      noUser: 'No user found. Please log in.',
+      filter: 'Filter',
+      resolved: 'Resolved',
+      unresolved: 'Unresolved',
+      issueDetails: 'Issue Details',
+    },
+    es: {
+      noUser: 'No se encontró usuario. Por favor inicie sesión.',
+      filter: 'Filtro',
+      resolved: 'Resuelto',
+      unresolved: 'No resuelto',
+      issueDetails: 'Detalles del Problema',
+    },
+  }[language] || {};
 
   const fetchIssues = async () => {
     try {
@@ -29,6 +53,23 @@ export default function IssueDetailsScreen() {
     }
   };
 
+  useEffect(() => {
+    const init = async () => {
+      const storedUsername = await AsyncStorage.getItem('username');
+      if (storedUsername) {
+        setUsername(storedUsername);
+      } else {
+        Toast.show(t.noUser, { duration: Toast.durations.LONG });
+      }
+
+      fetchIssues();
+    };
+
+    if (isFocused) {
+      init();
+    }
+  }, [isFocused, isResolved]);
+
   const handleSelectResolved = (value) => {
     setIsResolved(value);
     setMenuVisible(false);
@@ -38,20 +79,22 @@ export default function IssueDetailsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Title style={[styles.title, { color: colors.primary }]}>Issue Details</Title>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <Title style={[styles.title, { color: colors.primary }]}>{t.issueDetails}</Title>
+        <LanguageSwitcher />
+      </View>
 
-      {/* Filter Menu */}
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={
           <Button mode="outlined" onPress={() => setMenuVisible(true)} style={styles.filterButton}>
-            Filter: {isResolved ? 'Resolved' : 'Unresolved'}
+            {t.filter}: {isResolved ? t.resolved : t.unresolved}
           </Button>
         }
       >
-        <Menu.Item onPress={() => handleSelectResolved(true)} title="Resolved" />
-        <Menu.Item onPress={() => handleSelectResolved(false)} title="Unresolved" />
+        <Menu.Item onPress={() => handleSelectResolved(true)} title={t.resolved} />
+        <Menu.Item onPress={() => handleSelectResolved(false)} title={t.unresolved} />
       </Menu>
 
       <FlatList
@@ -75,7 +118,6 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: '700',
     fontSize: 28,
-    marginBottom: 20,
   },
   filterButton: {
     marginBottom: 16,
